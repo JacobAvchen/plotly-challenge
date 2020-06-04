@@ -1,58 +1,48 @@
-d3.json("../../samples.json").then((data) => {
-    function createBarchart(dataset){
+function createCharts(dataset){
+    d3.json("../../samples.json").then((data) => {
         for (var i = 0; i < data.samples.length; i++){
 
             if (parseInt(data.samples[i].id) == dataset){
-    
+
                 var otu_ids = data.samples[i].otu_ids.slice(0, 10).reverse();
-  
-    
+
+
                 for (id in otu_ids) {
                     id = toString(id);
                 };
-    
-                var trace = {
+
+                var trace1 = {
                     x: data.samples[i].sample_values.slice(0, 10).reverse(),
                     y: otu_ids.map(id => "OTU " + id),
                     text: data.samples[i].otu_labels.slice(0, 10).reverse(),
                     type: "bar",
                     orientation: "h"
                 };
-                    
-            };
-        };
-        chartData = [trace];
 
-        layout = {};
-        
-        Plotly.newPlot("bar", chartData, layout, {responsive: true});
-    }
-
-    function createBubble(dataset){
-        for (var i = 0; i < data.samples.length; i++){
-
-            if (parseInt(data.samples[i].id) == dataset){
-                var trace = {
+                var trace2 = {
                     x: data.samples[i].otu_ids,
                     y: data.samples[i].sample_values,
-                    mode: "markers",
-                    marker: {
-                        size: data.samples[i].sample_values,
-                        color: data.samples[i].otu_ids
-                    },
-                    text: data.samples[i].otu_labels
+                        mode: "markers",
+                        marker: {
+                            size: data.samples[i].sample_values,
+                            color: data.samples[i].otu_ids
+                        },
+                        text: data.samples[i].otu_labels
+                    };
                 };
-            };
-        };
-
-        chartData = [trace];
-
-        layout = {};
         
-        Plotly.newPlot("bubble", chartData, layout, {responsive: true});
-    }
+                chartData1 = [trace1];
+                chartData2 = [trace2];
+                layout = {};
 
-    function createDemoInfo(dataset){
+                Plotly.newPlot("bar", chartData1, layout, {responsive: true});
+                Plotly.newPlot("bubble", chartData2, layout, {responsive: true});
+        };
+    })
+}
+
+function createDemoInfo(dataset){
+    d3.json("../../samples.json").then((data) => {
         for (var i = 0; i < data.samples.length; i++){
 
             if (parseInt(data.metadata[i].id) == dataset){
@@ -65,23 +55,22 @@ d3.json("../../samples.json").then((data) => {
                 d3.select(".wfreq").text("wfreq: " + data.metadata[i].wfreq);
             };
         };
-    }
+    })
+}
 
-    
-    function optionChanged(dataset){
-        console.log("hi");
+function optionChanged(dataset){
+    d3.json("../../samples.json").then((data) => {
         for (var i = 0; i < data.samples.length; i++){
 
             if (parseInt(data.samples[i].id) == dataset){
 
                 var otu_ids = data.samples[i].otu_ids.slice(0, 10).reverse();
-  
-    
+
+
                 for (id in otu_ids) {
                     id = toString(id);
-                    console.log(id);
                 };
-    
+
                 var update1 = {
                     x: data.samples[i].sample_values.slice(0, 10).reverse(),
                     y: otu_ids.map(id => "OTU " + id),
@@ -101,25 +90,30 @@ d3.json("../../samples.json").then((data) => {
                 createDemoInfo(dataset);
                 Plotly.restyle("bar", update1);
                 Plotly.restyle("bubble", update2);
-            }
-        }
-    }
+            };
+        };
+    })
+}
 
-    var dropdownMenu = d3.select("#selDataset");
+function init() {
+
+    d3.json("../../samples.json").then((data) => {
+        
+        var dropdownMenu = d3.select("#selDataset");
     
-    dropdownMenu.selectAll("option")
-                 .data(data.names)
-                 .enter().append("option")
-                 .attr("value", ((d) => {d}))
-                 .text(function(d){return d});
-    
-    var dataset = dropdownMenu.property("value");
+        dropdownMenu.selectAll("option")
+                     .data(data.names)
+                     .enter().append("option")
+                     .attr("value", ((d) => {d}))
+                     .text(function(d){return d});
+        
+        var dataset = dropdownMenu.property("value");
+
+        createCharts(dataset);
+        createDemoInfo(dataset);
+    });
+}
+
+init();
 
 
-
-    createBarchart(dataset);
-    createBubble(dataset);
-    createDemoInfo(dataset);
-});
-
-d3.select("#selDataset").on("change", optionChanged(this.value));
